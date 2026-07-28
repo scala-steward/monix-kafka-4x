@@ -1,2 +1,5 @@
 # Initial applied scalafmtAll and scalafmtSbt
 b753bd1e5984cb2ab040667fe71e0cc3c8a9a86e
+
+# Scala Steward: Reformat with scalafmt 3.11.5
+371cc58e951ba15d520d209ba5acbcbe41ea8081
