@@ -39,7 +39,6 @@ trait KafkaConsumerObservable[K, V, Out] extends Observable[Out] {
   protected def config: KafkaConsumerConfig
   protected def consumerT: Task[Consumer[K, V]]
 
-
   /** Creates a task that polls the source, then feeds the downstream subscriber, returning the resulting
     * acknowledgement
     */
@@ -98,17 +97,17 @@ trait KafkaConsumerObservable[K, V, Out] extends Observable[Out] {
   private def pollHeartbeat(consumer: Consumer[K, V])(implicit scheduler: Scheduler): Task[Unit] = {
     Task.sleep(config.pollHeartbeatRate) >>
       Task.eval {
-          consumer.synchronized {
-            // needed in order to ensure that the consumer assignment
-            // is paused, meaning that no messages will get lost.
-            val assignment = consumer.assignment()
-            consumer.pause(assignment)
-            val records    = blocking(consumer.poll(java.time.Duration.ZERO))
-            if (!records.isEmpty) {
-              val errorMsg = s"Received ${records.count()} unexpected messages."
-              throw new IllegalStateException(errorMsg)
-            }
+        consumer.synchronized {
+          // needed in order to ensure that the consumer assignment
+          // is paused, meaning that no messages will get lost.
+          val assignment = consumer.assignment()
+          consumer.pause(assignment)
+          val records    = blocking(consumer.poll(java.time.Duration.ZERO))
+          if (!records.isEmpty) {
+            val errorMsg = s"Received ${records.count()} unexpected messages."
+            throw new IllegalStateException(errorMsg)
           }
+        }
       }.onErrorHandleWith { ex =>
         Task.now(scheduler.reportFailure(ex)) >>
           Task.sleep(1.seconds)
